@@ -12,7 +12,7 @@
  Target Server Version : 110004
  File Encoding         : 65001
 
- Date: 18/09/2019 21:18:57
+ Date: 19/09/2019 23:06:51
 */
 
 
@@ -970,10 +970,18 @@ CREATE TABLE "public"."insight" (
   "campaing_id" text COLLATE "pg_catalog"."default",
   "cost_per_unique_inline_link_click" json,
   "cost_per_unique_outbound_click" json,
-  "date_consult" timestamptz(6)
+  "date_consult" timestamptz(6),
+  "time_increment" text COLLATE "pg_catalog"."default"
 )
 ;
 ALTER TABLE "public"."insight" OWNER TO "postgres";
+
+-- ----------------------------
+-- Records of insight
+-- ----------------------------
+BEGIN;
+INSERT INTO "public"."insight" VALUES (857, NULL, NULL, NULL, 'ad', '"USD"', '"2164762147149842"', '"PE_EDI_MENTHOLATUM_2164762147149842"', NULL, '"[{\"action_type\": \"onsite_conversion.post_save\", \"value\": \"4\"}, {\"action_type\": \"post\", \"value\": \"34\"}, {\"action_type\": \"comment\", \"value\": \"4\"}, {\"action_type\": \"photo_view\", \"value\": \"372\"}, {\"action_type\": \"post_reaction\", \"value\": \"1848\"}, {\"action_type\": \"post_engagement\", \"value\": \"2262\"}, {\"action_type\": \"page_engagement\", \"value\": \"2262\"}]"', NULL, NULL, NULL, '"23843577880930322"', NULL, '"2_MENTHOLATUM_PPA_IMAG_NA_09SET19_15SET19_PPA_259599"', '"23843577880900322"', '"MENTHOLATUM_INT_ENG_MBDS_PPA_09SET19_15SET19_PPA_259599"', NULL, NULL, '"0"', '"0"', '"0"', NULL, '"AUCTION"', NULL, '"23843577880800322"', '"PER_AMLIM_MED_MTL_EQU_MENTHOLATUM_13685_NACIONAL__SEE_SUB_SOC_FBM_FB_ENG_CPE_N_02SET19_22SET19_HM 26-49 ABC_259599_"', NULL, NULL, '"2543"', NULL, NULL, NULL, NULL, NULL, '"[{\"action_type\": \"onsite_conversion.post_save\", \"value\": \"40.7075\"}, {\"action_type\": \"post\", \"value\": \"4.789118\"}, {\"action_type\": \"comment\", \"value\": \"40.7075\"}, {\"action_type\": \"photo_view\", \"value\": \"0.437715\"}, {\"action_type\": \"post_reaction\", \"value\": \"0.088111\"}, {\"action_type\": \"post_engagement\", \"value\": \"0.071985\"}, {\"action_type\": \"page_engagement\", \"value\": \"0.071985\"}]"', NULL, NULL, NULL, '"0.026693"', NULL, '"0.072466"', NULL, NULL, NULL, '"[{\"action_type\": \"onsite_conversion.post_save\", \"value\": \"40.7075\"}, {\"action_type\": \"post_engagement\", \"value\": \"0.074148\"}, {\"action_type\": \"page_engagement\", \"value\": \"0.074148\"}]"', '"0.065525"', NULL, '"0.064031"', '"2.435533"', '"2.648159"', '"2019-09-09"', '"3.803698"', '"2019-09-10"', '"2019-09-10"', NULL, NULL, NULL, NULL, '"9.920635"', NULL, NULL, '"6100"', NULL, NULL, '"1.087302"', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '"66856"', NULL, NULL, '"2247"', NULL, NULL, NULL, '"POST_ENGAGEMENT"', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '"61488"', NULL, '"{\"score\": \"1\", \"status\": \"OK\"}"', NULL, NULL, '"18.16"', '"162.83"', NULL, '"[{\"action_type\": \"onsite_conversion.post_save\", \"value\": \"4\"}, {\"action_type\": \"post\", \"value\": \"34\"}, {\"action_type\": \"comment\", \"value\": \"4\"}, {\"action_type\": \"photo_view\", \"value\": \"365\"}, {\"action_type\": \"post_reaction\", \"value\": \"1848\"}, {\"action_type\": \"post_engagement\", \"value\": \"2196\"}, {\"action_type\": \"page_engagement\", \"value\": \"2196\"}]"', '"2485"', '"4.041439"', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '"2019-09-09"', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '"0"', NULL, NULL, NULL, '2019-09-19 22:57:32-05', NULL);
+COMMIT;
 
 -- ----------------------------
 -- Table structure for platform
@@ -1011,7 +1019,9 @@ CREATE TABLE "public"."token" (
   "date_expiration" timestamp(6),
   "since" date,
   "until" date,
-  "period" text COLLATE "pg_catalog"."default"
+  "period" text COLLATE "pg_catalog"."default",
+  "breakdown" "public"."active_status",
+  "increment" text COLLATE "pg_catalog"."default"
 )
 ;
 ALTER TABLE "public"."token" OWNER TO "postgres";
@@ -1020,7 +1030,7 @@ ALTER TABLE "public"."token" OWNER TO "postgres";
 -- Records of token
 -- ----------------------------
 BEGIN;
-INSERT INTO "public"."token" VALUES (1, '314693332729550', 'a1ef00d12efc1e3a12fa01803980b645', 'EAAEeNkBPfs4BAAWcJN5qhV7p0xnZA5S7XiP1C2ciGR9llI4K9TXLqlHjZCZCkPZAZBZCRxCgMkhyZAoK1ZCVKfOA8LXw2xHLLCgvZB627ZC5XcdYloIgEZAjf3kNfMSQCeXFwIlAqekkZB2wcRkkfTvgJALiEAkRNA0v4tawJq1W4ZAvopQZDZD', 'default', '275139826019364', '2019-06-20 00:47:31.644228', NULL, '2019-09-10', '2019-09-10', NULL);
+INSERT INTO "public"."token" VALUES (1, '314693332729550', 'a1ef00d12efc1e3a12fa01803980b645', 'EAAEeNkBPfs4BAAWcJN5qhV7p0xnZA5S7XiP1C2ciGR9llI4K9TXLqlHjZCZCkPZAZBZCRxCgMkhyZAoK1ZCVKfOA8LXw2xHLLCgvZB627ZC5XcdYloIgEZAjf3kNfMSQCeXFwIlAqekkZB2wcRkkfTvgJALiEAkRNA0v4tawJq1W4ZAvopQZDZD', 'default', '275139826019364', '2019-06-20 00:47:31.644228', NULL, '2019-09-10', '2019-09-10', NULL, 'N', 'all_days');
 COMMIT;
 
 -- ----------------------------

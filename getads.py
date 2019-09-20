@@ -30,7 +30,6 @@ class Ads(object):
         period=task_data.period
         since=since.strftime('%Y-%m-%d')
         until=until.strftime('%Y-%m-%d')
-
         # Start the connection to the facebook API
         FacebookAdsApi.init(my_app_id, my_app_secret, my_access_token)
 
@@ -66,7 +65,8 @@ class Ads(object):
                 fields_list.append(field.name_field)
 
         del fields 
-        # Get Breakdowns from data base 
+        # Get Breakdowns from data base
+        #if()
         breakdowns = self.database.select('breakdown')
         breakdown_list = []
 
@@ -109,57 +109,77 @@ class Ads(object):
                     else :
                         ad_data[field] = ad[field] 
             del ad
-            self.database.insert('ad',ad_data)
+            self.database.insert('ad',ad_data)            
             ad_object = Ad(ad_data['ad_id'])
-            
-            # if(task_data[0].breakdown) :
+            if(task_data.breakdown == 'Y') :
                 # Get insight for each breakdown
-            for breakdown in breakdown_list:
-                breakdown_names_list = breakdown.name.split(',')
-                #Construct the params of time 
-                
-                #Get Date Start And End
-                
-                if not period:
-                    params_ad = {
-                        'level':'ad',
-                        'time_range': {
-                            'since': since,
-                            'until': until
-                        },
-                        'breakdowns': breakdown_names_list
-                    }
-                else:
-                    params = {
-                        'level':'ad',
-                        'date_preset': period
-                    }               
-
-                breakdown_insights_list =  ad_object.get_insights(
-                    params = params_ad,
-                    fields = ad_insights_fields_list
-                )
-                if(len(breakdown_insights_list)>0):
-                    for breakdown_insight in breakdown_insights_list:
-                        breakdown_value = ""
-                        for breakdown_name in breakdown_names_list :
-                            if (breakdown_name in breakdown_insight):
-                                    breakdown_value = breakdown_value + breakdown_insight[breakdown_name] + ","
-                        
-                        breakdown_insights_data = {
-                            'id_breakdown_configuration': breakdown.id_breakdown_configuration,
-                            'breakdown_name': breakdown.name,
-                            'breakdown_value': breakdown_value,
-                            'ad_id': ad_data['ad_id'],
-                            'level_insight': 'ad'
+                for breakdown in breakdown_list:
+                    breakdown_names_list = breakdown.name.split(',')
+                    #Construct the params of time 
+                    
+                    #Get Date Start And End
+                    
+                    if not period:
+                        params_ad = {
+                            'level':'ad',
+                            'time_range': {
+                                'since': since,
+                                'until': until
+                            },
+                            'breakdowns': breakdown_names_list,
+                            'time_increment': task_data.increment
                         }
+                    else:
+                        params = {
+                            'level':'ad',
+                            'date_preset': period,
+                            'time_increment': task_data.increment
+                        }               
 
-                        for ad_insights_field in ad_insights_fields_list:
-                            if (ad_insights_field in breakdown_insight):
-                                breakdown_insights_data[ad_insights_field] = breakdown_insight[ad_insights_field]
-                        
-                        self.database.insert('insight',breakdown_insights_data)
-                        del breakdown_insights_data                            
+                    breakdown_insights_list =  ad_object.get_insights(
+                        params = params_ad,
+                        fields = ad_insights_fields_list
+                    )
+                    if(len(breakdown_insights_list)>0):
+                        for breakdown_insight in breakdown_insights_list:
+                            breakdown_value = ""
+                            for breakdown_name in breakdown_names_list :
+                                if (breakdown_name in breakdown_insight):
+                                        breakdown_value = breakdown_value + breakdown_insight[breakdown_name] + ","
+                            
+                            breakdown_insights_data = {
+                                'id_breakdown_configuration': breakdown.id_breakdown_configuration,
+                                'breakdown_name': breakdown.name,
+                                'breakdown_value': breakdown_value,
+                                'ad_id': ad_data['ad_id'],
+                                'level_insight': 'ad',
+                                'time_increment': task_data.increment
+                            }
+
+                            for ad_insights_field in ad_insights_fields_list:
+                                if (ad_insights_field in breakdown_insight):
+                                    breakdown_insights_data[ad_insights_field] = breakdown_insight[ad_insights_field]
+                            
+                            self.database.insert('insight',breakdown_insights_data)
+                            del breakdown_insights_data
+            else :
+                insights_list =  ad_object.get_insights(
+                    params = params,
+                    fields = ad_insights_fields_list
+                    )
+                if(len(insights_list)>0):
+                    for insight in insights_list:
+                        insights_data = {
+                            'ad_id': ad_data['ad_id'],
+                            'level_insight':'ad',
+                            'time_increment': task_data.increment
+                        }
+                    for ad_insights_field in ad_insights_fields_list:
+                        if (ad_insights_field in insight):
+                            insights_data[ad_insights_field] = superSerialize(insight[ad_insights_field])
+                    insights_data['date_consult'] = datetime.datetime.now().strftime('%Y-%m-%d %X')
+                    self.database.insert('insight',insights_data)
+                    del insights_data                         
                 
             #Check if you reached 75% of the limit, if yes then back-off for 5 minutes (put this chunk in your
             if (check_limit(account_id,my_access_token)>75):

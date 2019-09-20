@@ -38,7 +38,7 @@ class Campain(object):
 
         dateDelta = datetime.datetime.now() - datetime.timedelta(days=1)
         deltaHyphen = dateDelta.strftime('%Y-%m-%d')
-        print(deltaHyphen)
+        #print(deltaHyphen)
 
         #Construct the params of time
         if not period:
@@ -47,12 +47,14 @@ class Campain(object):
                 'time_range': {
                     'since': since,
                     'until': until,
-                }
+                },
+                'time_increment': task_data.increment
             }
         else:
             params = {
                 'level':'campaign',
-                'date_preset': period
+                'date_preset': period,
+                'time_increment': task_data.increment
             }
         
         # Start the connection to the facebook API
@@ -94,7 +96,7 @@ class Campain(object):
             params=params
         )
         for camp in camps:
-            print(camp,'Acà')
+            #print(camp,'Acà')
             campaing_data = {
                 'date_consult': datetime.datetime.now().strftime('%Y-%m-%d %X'),
                 'id_platform': 1
@@ -119,11 +121,13 @@ class Campain(object):
                 for insight in insights_list:
                     insights_data = {
                         'campaing_id': campaing_data['campaing_id'],
-                        'level_insight':'campaign'
+                        'level_insight':'campaign',
+                        'time_increment': task_data.increment
                     }
                     for campaing_insights_field in campaing_insights_fields_list:
                         if (campaing_insights_field in insight):
                             insights_data[campaing_insights_field] = insight[campaing_insights_field]
+                    insights_data['date_consult']=datetime.datetime.now().strftime('%Y-%m-%d %X')
                     self.database.insert('insight',insights_data)
                     del insights_data
         

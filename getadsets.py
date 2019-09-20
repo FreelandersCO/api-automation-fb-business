@@ -45,12 +45,14 @@ class Adset(object):
                 'time_range': {
                     'since': since,
                     'until': until,
-                }
+                },
+                'time_increment': task_data.increment
             }
         else:
             params = {
                 'level':'adset',
-                'date_preset': period
+                'date_preset': period,
+                'time_increment': task_data.increment
             }
 
         # Get all ad accounts on the business account
@@ -117,13 +119,15 @@ class Adset(object):
                 for insight in insights_list:
                     insights_data = {
                         'adset_id': data_adset['adset_id'],
-                        'level_insight':'adset'
+                        'level_insight':'adset',
+                        'time_increment': task_data.increment
                     }
                     for adset_insight_field in adset_insight_fields_list:
                         if (adset_insight_field in insight):
                             # insights_data[adset_insight_field] = superSerialize(insight[adset_insight_field])
                             insights_data[adset_insight_field] = insight[adset_insight_field]
-
+                    
+                    insights_data['date_consult']=datetime.datetime.now().strftime('%Y-%m-%d %X')
                     self.database.insert('insight',insights_data)
                     del insights_data
             #Check if you reached 75% of the limit, if yes then back-off for 5 minutes (put this chunk in your 'for ad is ads' loop, every 100-200 iterations)
