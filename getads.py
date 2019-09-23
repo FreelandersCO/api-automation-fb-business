@@ -130,9 +130,10 @@ class Ads(object):
                             'time_increment': task_data.increment
                         }
                     else:
-                        params = {
+                        params_ad = {
                             'level':'ad',
                             'date_preset': period,
+                            'breakdowns': breakdown_names_list,
                             'time_increment': task_data.increment
                         }               
 
@@ -163,8 +164,23 @@ class Ads(object):
                             self.database.insert('insight',breakdown_insights_data)
                             del breakdown_insights_data
             else :
+                if not period:
+                    params_ad = {
+                        'level':'ad',
+                        'time_range': {
+                            'since': since,
+                            'until': until
+                        },
+                        'time_increment': task_data.increment
+                    }
+                else:
+                    params_ad = {
+                        'level':'ad',
+                        'date_preset': period,
+                        'time_increment': task_data.increment
+                    }           
                 insights_list =  ad_object.get_insights(
-                    params = params,
+                    params = params_ad,
                     fields = ad_insights_fields_list
                     )
                 if(len(insights_list)>0):
