@@ -164,7 +164,7 @@ class Ads(object):
                                     else:
                                         breakdown_insights_data[ad_insights_field] = breakdown_insight[ad_insights_field]
                                     #breakdown_insights_data[ad_insights_field] = breakdown_insight[ad_insights_field]
-                            
+                            breakdown_insights_data['date_consult'] = datetime.datetime.now().strftime('%Y-%m-%d %X')
                             self.database.insert('insight',breakdown_insights_data)
                             del breakdown_insights_data
             else :
