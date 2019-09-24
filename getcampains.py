@@ -106,7 +106,10 @@ class Campain(object):
                     if (field == 'id'):
                         campaing_data['campaing_id'] = camp[field]
                     else :
-                        campaing_data[field] = camp[field]
+                        if(field == 'promoted_object'):
+                            campaing_data[field] = superSerialize(camp[field])
+                        else:
+                            campaing_data[field] = camp[field]
             rows = rows + 1
             #print(campaing_data)
             #Save in data base
@@ -126,7 +129,10 @@ class Campain(object):
                     }
                     for campaing_insights_field in campaing_insights_fields_list:
                         if (campaing_insights_field in insight):
-                            insights_data[campaing_insights_field] = insight[campaing_insights_field]
+                            if(campaing_insights_field == 'promoted_object'):
+                                insights_data[campaing_insights_field] = superSerialize(insight[campaing_insights_field])
+                            else:
+                                insights_data[campaing_insights_field] = insight[campaing_insights_field]
                     insights_data['date_consult']=datetime.datetime.now().strftime('%Y-%m-%d %X')
                     self.database.insert('insight',insights_data)
                     del insights_data
