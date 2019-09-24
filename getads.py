@@ -159,8 +159,12 @@ class Ads(object):
 
                             for ad_insights_field in ad_insights_fields_list:
                                 if (ad_insights_field in breakdown_insight):
-                                    breakdown_insights_data[ad_insights_field] = breakdown_insight[ad_insights_field]
-                            
+                                    if(ad_insights_field == 'relevance_score'):
+                                        breakdown_insights_data[ad_insights_field] = superSerialize(breakdown_insight[ad_insights_field])
+                                    else:
+                                        breakdown_insights_data[ad_insights_field] = breakdown_insight[ad_insights_field]
+                                    #breakdown_insights_data[ad_insights_field] = breakdown_insight[ad_insights_field]
+                            breakdown_insights_data['date_consult'] = datetime.datetime.now().strftime('%Y-%m-%d %X')
                             self.database.insert('insight',breakdown_insights_data)
                             del breakdown_insights_data
             else :
@@ -183,6 +187,7 @@ class Ads(object):
                     params = params_ad,
                     fields = ad_insights_fields_list
                     )
+                
                 if(len(insights_list)>0):
                     for insight in insights_list:
                         insights_data = {
@@ -192,9 +197,18 @@ class Ads(object):
                         }
                     for ad_insights_field in ad_insights_fields_list:
                         if (ad_insights_field in insight):
-                            insights_data[ad_insights_field] = superSerialize(insight[ad_insights_field])
+                            #insights_data[ad_insights_field] = superSerialize(insight[ad_insights_field])
+                            if(ad_insights_field == 'relevance_score'):
+                                insights_data[ad_insights_field] = superSerialize(insight[ad_insights_field])
+                            else:
+                                insights_data[ad_insights_field] = insight[ad_insights_field]
                     insights_data['date_consult'] = datetime.datetime.now().strftime('%Y-%m-%d %X')
-                    self.database.insert('insight',insights_data)
+                    #print(insights_list)
+                    try:
+                        self.database.insert('insight',insights_data)
+                    except:
+                        print('falla')
+                    
                     del insights_data                         
                 
             #Check if you reached 75% of the limit, if yes then back-off for 5 minutes (put this chunk in your
