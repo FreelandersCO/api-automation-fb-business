@@ -45,14 +45,11 @@ class Adset(object):
                 'time_range': {
                     'since': since,
                     'until': until,
-                },
-                'time_increment': task_data.increment
+                }
             }
         else:
             params = {
                 'level':'adset',
-                'date_preset': str(period),
-                'time_increment': task_data.increment
             }
 
         # Get all ad accounts on the business account
@@ -83,14 +80,13 @@ class Adset(object):
         # Create an addaccount object from the adaccount id to make it possible to get insights
         account_id = account_id
         tempaccount = AdAccount("act_"+account_id)
-
         # Grab insight info for all camp in the adaccount
         adsets = tempaccount.get_ad_sets(
             params = params,
             fields = fieldsList
         )
         for adset in adsets:
-            
+           
             data_adset = {
                 'id_platform': 1
             }
@@ -103,35 +99,31 @@ class Adset(object):
                             data_adset[field] = superSerialize(adset[field])
                         else:
                             data_adset[field] = adset[field]
-
-                        
-            rows = rows + 1
             #Save in data base
             self.database.insert('adset',data_adset)
-            #Get insight
-            adset_object = AdSet(data_adset['adset_id'])
-            insights_list =  adset_object.get_insights(
-                params = params,
-                fields = adset_insight_fields_list
-            )
-            if(len(insights_list)>0):
-                for insight in insights_list:
-                    insights_data = {
-                        'adset_id': data_adset['adset_id'],
-                        'level_insight':'adset',
-                        'time_increment': task_data.increment
-                    }
-                    for adset_insight_field in adset_insight_fields_list:
-                        if (adset_insight_field in insight):
-                            # insights_data[adset_insight_field] = superSerialize(insight[adset_insight_field])
-                            insights_data[adset_insight_field] = insight[adset_insight_field]
-                    
-                    self.database.insert('insight',insights_data)
-                    del insights_data
-                #Check if you reached 75% of the limit, if yes then back-off for 5 minutes (put this chunk in your 'for ad is ads' loop, every 100-200 iterations)
-                if (check_limit(account_id,my_access_token)>75):
-                    print('75% Rate Limit Reached. Cooling Time 5 Minutes. '+ account_id)
-                    logging.debug('75% Rate Limit Reached. Cooling Time 5 Minutes.')
-                    time.sleep(300)
-                    print('Cooling finish.'+ account_id)
+            
+        # Hace el llamado
+        insights_list =  AdAccount("act_"+account_id).get_insights(
+            params = params,
+            fields = adset_insight_fields_list
+        )
+        if(len(insights_list)>0):
+            for insight in insights_list:
+                insights_data = {
+                    'adset_id': data_adset['adset_id'],
+                    'level_insight':'adset',
+                    'time_increment': task_data.increment
+                }
+                for adset_insight_field in adset_insight_fields_list:
+                    if (adset_insight_field in insight):
+                        insights_data[adset_insight_field] = insight[adset_insight_field]
+                
+                self.database.insert('insight',insights_data)
+                del insights_data
+            #Check if you reached 75% of the limit, if yes then back-off for 5 minutes (put this chunk in your 'for ad is ads' loop, every 100-200 iterations)
+            if (check_limit(account_id,my_access_token)>75):
+                print('75% Rate Limit Reached. Cooling Time 5 Minutes. '+ account_id)
+                logging.debug('75% Rate Limit Reached. Cooling Time 5 Minutes.')
+                time.sleep(300)
+                print('Cooling finish.'+ account_id)
         

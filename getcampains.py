@@ -48,14 +48,12 @@ class Campain(object):
                 'time_range': {
                     'since': since,
                     'until': until,
-                },
-                'time_increment': task_data.increment
+                }
             }
         else:
             params = {
                 'level':'campaign',
-                'date_preset': period,
-                'time_increment': task_data.increment
+                'date_preset': period
             }
         
         # Start the connection to the facebook API
