@@ -19,8 +19,8 @@ from multiprocessing.pool import ThreadPool
 
 class Ads(object):
     def __init__(self,task_data,account_id):
-        print('Holi Empezo ADs')
         super(Ads).__init__()
+        print('Run AD')
         self.database = DatabaseOperation()
         my_app_id = task_data.app_id
         my_app_secret = task_data.app_secret
@@ -30,7 +30,6 @@ class Ads(object):
         period=task_data.period
         since=since.strftime('%Y-%m-%d')
         until=until.strftime('%Y-%m-%d')
-        breakdown_names_list = ''
         # Start the connection to the facebook API
         FacebookAdsApi.init(my_app_id, my_app_secret, my_access_token)
         
@@ -66,22 +65,23 @@ class Ads(object):
         else:
             params_ad = {
                 'level':'ad',
-                'date_preset': period,
+                'date_preset': 'last_7d',
                 'time_increment': task_data.increment
             }
         
         # Arma el diccionrio de Breakdowns si está activo
         if(task_data.breakdown == 'Y') :
             breakdowns = self.database.select('breakdown')
+            breakdown_names = []
             breakdown_list = []
 
             for breakdown in breakdowns:
                 if (breakdown.active == 'Y'):
+                    breakdown_names.append(breakdown.name)
                     breakdown_list.append(breakdown)
-                    breakdown_names_list = breakdown.name  + ',' + breakdown_names_list
             del breakdowns
-            params_ad['breakdowns'] = breakdown_names_list[:-1]
-        
+            params_ad['breakdowns'] = breakdown_names
+
         # Hace el llamado
         data_list =  AdAccount("act_"+account_id).get_insights(
             params = params_ad,
@@ -89,7 +89,6 @@ class Ads(object):
         )
         # Recorre el llamado
         for data_single in data_list:
-            
             # data para la tabla ad
             ad_data = {
                 'read':'N',
@@ -110,28 +109,34 @@ class Ads(object):
             # Extrae los datos para la tabla Insight
             if(task_data.breakdown == 'Y') :
                 #Datos con breakdown
-                print("Hola data con breakdowm")
-                print(data_single)
-            else:
-                insights_data = {
-                    'ad_id': ad_id,
-                    'level_insight':'ad',
-                    'time_increment': task_data.increment
-                }
-                # Extrae los datos para la tabla Insight
-                for ad_field_insight in ad_field_insight_list:
-                    if(ad_field_insight in data_single):
-                        if ad_field_insight == 'relevance_score':
-                            insights_data[ad_field_insight] = superSerialize(data_single[ad_field_insight])
-                        else:
-                            insights_data[ad_field_insight] = data_single[ad_field_insight]
+                ad_field_insight_list = ad_field_insight_list + breakdown_names
+            # Datos Estaticos
+            insights_data = {
+                'ad_id': ad_id,
+                'level_insight':'ad',
+                'time_increment': task_data.increment
+            }
+            # Extrae los datos para la tabla Insight
+            for ad_field_insight in ad_field_insight_list:
+                if(ad_field_insight in data_single):
+                    if ad_field_insight == 'relevance_score':
+                        insights_data[ad_field_insight] = superSerialize(data_single[ad_field_insight])
+                    else:
+                        insights_data[ad_field_insight] = data_single[ad_field_insight]
 
-                # Inserta los datos para la tabla Insight
-                try:
-                    self.database.insert('insight',insights_data)
-                    del insights_data 
-                except:
-                    print('falla')
+            # Inserta los datos para la tabla Insight
+            try:
+                self.database.insert('insight',insights_data)
+                del insights_data 
+            except:
+                print('falla')
+            #Check if you reached 75% of the limit, if yes then back-off for 5 minutes (put this chunk in your 'for ad is ads' loop, every 100-200 iterations)
+            if (check_limit(account_id,my_access_token)>75):
+                print('75% Rate Limit Reached. Cooling Time 5 Minutes.'+ account_id)
+                logging.debug('75% Rate Limit Reached. Cooling Time 5 Minutes.')
+                time.sleep(300)
+                print('Cooling finish.'+ account_id)
+
 
             #print('Dato', data_single['ad_name'], data_single['reach'] , data_single['date_start'], data_single['date_stop'])
         

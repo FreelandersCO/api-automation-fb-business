@@ -20,6 +20,7 @@ from multiprocessing.pool import ThreadPool
 class Adset(object):
     def __init__(self,task_data,account_id):
         super(Adset).__init__()
+        print('Run Adset')
         self.database = DatabaseOperation()
         my_app_id = task_data.app_id
         my_app_secret = task_data.app_secret
@@ -36,7 +37,6 @@ class Adset(object):
 
         dateDelta = datetime.datetime.now() - datetime.timedelta(days=1)
         deltaHyphen = dateDelta.strftime('%Y-%m-%d')
-        print(deltaHyphen)
 
         #Construct the params of time
         if not period:
@@ -51,7 +51,7 @@ class Adset(object):
         else:
             params = {
                 'level':'adset',
-                'date_preset': period,
+                'date_preset': str(period),
                 'time_increment': task_data.increment
             }
 
@@ -92,7 +92,6 @@ class Adset(object):
         for adset in adsets:
             
             data_adset = {
-                'date_consult': datetime.datetime.now().strftime('%Y-%m-%d %X'),
                 'id_platform': 1
             }
             for field in fieldsList:
@@ -127,14 +126,12 @@ class Adset(object):
                             # insights_data[adset_insight_field] = superSerialize(insight[adset_insight_field])
                             insights_data[adset_insight_field] = insight[adset_insight_field]
                     
-                    insights_data['date_consult']=datetime.datetime.now().strftime('%Y-%m-%d %X')
                     self.database.insert('insight',insights_data)
                     del insights_data
-            #Check if you reached 75% of the limit, if yes then back-off for 5 minutes (put this chunk in your 'for ad is ads' loop, every 100-200 iterations)
-            if (check_limit(account_id,my_access_token)>75):
-                print('75% Rate Limit Reached. Cooling Time 5 Minutes. '+ account_id)
-                logging.debug('75% Rate Limit Reached. Cooling Time 5 Minutes.')
-                time.sleep(300)
-                print('Cooling finish.'+ account_id)
-        # Print report
-        print (str(rows) + " rows added to the file ")
+                #Check if you reached 75% of the limit, if yes then back-off for 5 minutes (put this chunk in your 'for ad is ads' loop, every 100-200 iterations)
+                if (check_limit(account_id,my_access_token)>75):
+                    print('75% Rate Limit Reached. Cooling Time 5 Minutes. '+ account_id)
+                    logging.debug('75% Rate Limit Reached. Cooling Time 5 Minutes.')
+                    time.sleep(300)
+                    print('Cooling finish.'+ account_id)
+        

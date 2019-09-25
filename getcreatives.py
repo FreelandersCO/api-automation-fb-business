@@ -19,6 +19,7 @@ from facebook_business.adobjects.ad import Ad
 class AdsCreativites(object):
     def __init__(self,task_data,account_id):
         super(AdsCreativites).__init__()
+        print('Runnig creatives')
         self.database = DatabaseOperation()
         my_app_id = task_data.app_id
         my_app_secret = task_data.app_secret

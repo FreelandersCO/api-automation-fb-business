@@ -26,6 +26,7 @@ class Campain(object):
     def __init__(self,task_data,account_id):
         super(Campain).__init__()
         self.database = DatabaseOperation()
+        print('Running Campains')
         my_app_id = task_data.app_id
         my_app_secret = task_data.app_secret
         my_access_token = task_data.access_token
@@ -96,9 +97,7 @@ class Campain(object):
             params=params
         )
         for camp in camps:
-            #print(camp,'Acà')
             campaing_data = {
-                'date_consult': datetime.datetime.now().strftime('%Y-%m-%d %X'),
                 'id_platform': 1
             }
             for field in fieldsList:
@@ -123,7 +122,6 @@ class Campain(object):
             if(len(insights_list)>0):
                 for insight in insights_list:
                     insights_data = {
-                        'campaing_id': campaing_data['campaing_id'],
                         'level_insight':'campaign',
                         'time_increment': task_data.increment
                     }
@@ -133,9 +131,12 @@ class Campain(object):
                                 insights_data[campaing_insights_field] = superSerialize(insight[campaing_insights_field])
                             else:
                                 insights_data[campaing_insights_field] = insight[campaing_insights_field]
-                    insights_data['date_consult']=datetime.datetime.now().strftime('%Y-%m-%d %X')
-                    self.database.insert('insight',insights_data)
-                    del insights_data
+                    try:
+                        self.database.insert('insight',insights_data)
+                        del insights_data 
+                    except:
+                        print('falla')            
+                        del insights_data
         
             #Check if you reached 75% of the limit, if yes then back-off for 5 minutes (put this chunk in your 'for ad is ads' loop, every 100-200 iterations)
             if (check_limit(account_id,my_access_token)>75):

@@ -838,9 +838,6 @@ COMMIT;
 DROP TABLE IF EXISTS "public"."insight";
 CREATE TABLE "public"."insight" (
   "id_insight" int4 NOT NULL DEFAULT nextval('insight_seq'::regclass),
-  "id_breakdown_configuration" int4,
-  "breakdown_name" text COLLATE "pg_catalog"."default",
-  "breakdown_value" text COLLATE "pg_catalog"."default",
   "level_insight" text COLLATE "pg_catalog"."default" NOT NULL,
   "account_currency" text COLLATE "pg_catalog"."default",
   "account_id" text COLLATE "pg_catalog"."default",
@@ -855,7 +852,7 @@ CREATE TABLE "public"."insight" (
   "ad_name" text COLLATE "pg_catalog"."default",
   "adset_id" text COLLATE "pg_catalog"."default",
   "adset_name" text COLLATE "pg_catalog"."default",
-  "age" json,
+  "age" TEXT,
   "age_targeting" text COLLATE "pg_catalog"."default",
   "auction_bid" text COLLATE "pg_catalog"."default",
   "auction_competitiveness" text COLLATE "pg_catalog"."default",
@@ -885,7 +882,9 @@ CREATE TABLE "public"."insight" (
   "cost_per_thruplay" json,
   "cost_per_unique_action_type" json,
   "cost_per_unique_click" text COLLATE "pg_catalog"."default",
-  "country" json,
+  "cost_per_unique_inline_link_click" json,
+  "cost_per_unique_outbound_click" json,
+  "country" TEXT,
   "cpc" text COLLATE "pg_catalog"."default",
   "cpm" text COLLATE "pg_catalog"."default",
   "cpp" text COLLATE "pg_catalog"."default",
@@ -895,7 +894,7 @@ CREATE TABLE "public"."insight" (
   "date_stop" text COLLATE "pg_catalog"."default",
   "dda_countby_convs" text COLLATE "pg_catalog"."default",
   "description_asset" json,
-  "device_platform" json,
+  "device_platform" TEXT,
   "dma" json,
   "estimated_ad_recall_rate" text COLLATE "pg_catalog"."default",
   "estimated_ad_recall_rate_lower_bound" text COLLATE "pg_catalog"."default",
@@ -905,7 +904,7 @@ CREATE TABLE "public"."insight" (
   "estimated_ad_recallers_upper_bound" text COLLATE "pg_catalog"."default",
   "frequency" text COLLATE "pg_catalog"."default",
   "frequency_value" json,
-  "gender" json,
+  "gender" TEXT,
   "gender_targeting" text COLLATE "pg_catalog"."default",
   "hourly_stats_aggregated_by_advertiser_time_zone" json,
   "hourly_stats_aggregated_by_audience_time_zone" json,
@@ -927,7 +926,7 @@ CREATE TABLE "public"."insight" (
   "publisher_platform" json,
   "purchase_roas" text COLLATE "pg_catalog"."default",
   "reach" text COLLATE "pg_catalog"."default",
-  "region" json,
+  "region" TEXT,
   "relevance_score" json,
   "reporting_ends" text COLLATE "pg_catalog"."default",
   "reporting_starts" text COLLATE "pg_catalog"."default",
@@ -968,13 +967,9 @@ CREATE TABLE "public"."insight" (
   "website_ctr" json,
   "website_purchase_roas" text COLLATE "pg_catalog"."default",
   "wish_bid" text COLLATE "pg_catalog"."default",
-  "campaing_id" text COLLATE "pg_catalog"."default",
-  "cost_per_unique_inline_link_click" json,
-  "cost_per_unique_outbound_click" json,
-  "date_consult" timestamptz(6),
+  "date_consult" TIMESTAMP DEFAULT NOW(),
   "time_increment" text COLLATE "pg_catalog"."default"
-)
-;
+);
 ALTER TABLE "public"."insight" OWNER TO "postgres";
 
 -- ----------------------------
