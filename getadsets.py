@@ -16,7 +16,6 @@ from facebook_business.adobjects.adset import AdSet
 
 from multiprocessing.pool import ThreadPool
 
-
 class Adset(object):
     def __init__(self,task_data,account_id):
         super(Adset).__init__()
@@ -34,9 +33,6 @@ class Adset(object):
 
         # Start the connection to the facebook API
         FacebookAdsApi.init(my_app_id, my_app_secret, my_access_token)
-
-        dateDelta = datetime.datetime.now() - datetime.timedelta(days=1)
-        deltaHyphen = dateDelta.strftime('%Y-%m-%d')
 
         #Construct the params of time
         if not period:
@@ -72,16 +68,8 @@ class Adset(object):
                 rows = rows +1
         del adset_insight
 
-        # To keep track of rows added to file
-        rows = 0
-
-        #Iterate through the adaccounts
-        # for account in accounts:
-        # Create an addaccount object from the adaccount id to make it possible to get insights
-        account_id = account_id
-        tempaccount = AdAccount("act_"+account_id)
         # Grab insight info for all camp in the adaccount
-        adsets = tempaccount.get_ad_sets(
+        adsets = AdAccount('act_'+account_id).get_ad_sets(
             params = params,
             fields = fieldsList
         )
@@ -92,25 +80,25 @@ class Adset(object):
             }
             for field in fieldsList:
                 if(field in adset):
-                    if (field == 'id'):
-                        data_adset['adset_id'] = adset[field]
-                    else :
-                        if(field == 'targeting'):
-                            data_adset[field] = superSerialize(adset[field])
-                        else:
-                            data_adset[field] = adset[field]
+                    if(field == 'targeting'):
+                        data_adset[field] = superSerialize(adset[field])
+                    else:
+                        data_adset[field] = adset[field]   
             #Save in data base
-            self.database.insert('adset',data_adset)
-            
+            try:
+                self.database.insert('adset',data_adset)
+                del data_adset 
+            except:
+                del data_adset 
+
         # Hace el llamado
-        insights_list =  AdAccount("act_"+account_id).get_insights(
+        insights_list =  AdAccount('act_'+account_id).get_insights(
             params = params,
             fields = adset_insight_fields_list
         )
         if(len(insights_list)>0):
             for insight in insights_list:
                 insights_data = {
-                    'adset_id': data_adset['adset_id'],
                     'level_insight':'adset',
                     'time_increment': task_data.increment
                 }

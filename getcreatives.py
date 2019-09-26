@@ -395,6 +395,4 @@ class AdsCreativites(object):
                 del image_file
                 del is_dco_internal
                 del url_post
-
-            # Print report
-            print (str(rows) + " rows added to the file ")
+            

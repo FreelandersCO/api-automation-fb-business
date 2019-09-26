@@ -16,7 +16,6 @@ from facebook_business.adobjects.ad import Ad
 
 from multiprocessing.pool import ThreadPool
 
-
 class Ads(object):
     def __init__(self,task_data,account_id):
         super(Ads).__init__()

@@ -30,16 +30,36 @@ class Campain(object):
         my_app_id = task_data.app_id
         my_app_secret = task_data.app_secret
         my_access_token = task_data.access_token
-        business_id = task_data.business_id
         since=task_data.since
         until=task_data.until
         period=task_data.period
         since=since.strftime('%Y-%m-%d')
         until=until.strftime('%Y-%m-%d')
 
-        dateDelta = datetime.datetime.now() - datetime.timedelta(days=1)
-        deltaHyphen = dateDelta.strftime('%Y-%m-%d')
-        #print(deltaHyphen)
+        # Start the connection to the facebook API
+        FacebookAdsApi.init(my_app_id, my_app_secret, my_access_token)
+
+        # Get Fields Configuration
+        fields = self.database.select('field','type_configuration','campaing')
+        fields_list = []
+        fields_list_names = []
+
+        for field in fields:
+            if (field.active == 'Y'):
+                fields_list.append(field)
+                fields_list_names.append(field.name_field)
+
+        del fields
+
+        # Get field for insights from data base 
+        campaing_insights = self.database.select('field','type_configuration','campaing-insight')
+        campaing_insights_fields_list = []
+        campaing_insights_fields_names = []
+        for campaing_insights in campaing_insights:
+            if (campaing_insights.active == 'Y'):
+                campaing_insights_fields_list.append(campaing_insights)
+                campaing_insights_fields_names.append(campaing_insights.name_field)
+        del campaing_insights
 
         #Construct the params of time
         if not period:
@@ -55,86 +75,52 @@ class Campain(object):
                 'level':'campaign',
                 'date_preset': period
             }
-        
-        # Start the connection to the facebook API
-        FacebookAdsApi.init(my_app_id, my_app_secret, my_access_token)
-
-        # Create a business object for the business account
-        business = Business(business_id)
-
-        # Get Fields Configuration
-        fields = self.database.select('field','type_configuration','campaing')
-        fieldsList = []
-
-        for field in fields:
-            if (field.active == 'Y'):
-                fieldsList.append(field.name_field)
-
-        del fields
-
-        # Get field for insights from data base 
-        campaing_insights = self.database.select('field','type_configuration','campaing-insight')
-        campaing_insights_fields_list = []
-
-        for campaing_insights in campaing_insights:
-            if (campaing_insights.active == 'Y'):
-                campaing_insights_fields_list.append(campaing_insights.name_field)
-        del campaing_insights
-
-        # To keep track of rows added to file
-        rows = 0
-
-        #Iterate through the adaccounts
-        #for account in accounts:
-            # Create an addaccount object from the adaccount id to make it possible to get insights
-        account_id = account_id
-        tempaccount = AdAccount("act_"+account_id)
         # Grab insight info for all camp in the adaccount
-        camps = tempaccount.get_campaigns(
-            fields=fieldsList,
+        camps = AdAccount('act_'+account_id).get_campaigns(
+            fields=fields_list_names,
             params=params
         )
+        
         for camp in camps:
             campaing_data = {
                 'id_platform': 1
             }
-            for field in fieldsList:
-                if(field in camp):
-                    if (field == 'id'):
-                        campaing_data['campaing_id'] = camp[field]
-                    else :
-                        if(field == 'promoted_object'):
-                            campaing_data[field] = superSerialize(camp[field])
+            for field in fields_list:
+                if(field.name_field in camp):
+                    if(field.serialize == 'Y'):
+                            campaing_data[field.name_field] = superSerialize(camp[field.name_field])
+                    else:
+                        campaing_data[field.name_field] = camp[field.name_field]
+
+            try:
+                self.database.insert('campaing',campaing_data)
+                del campaing_data 
+            except:
+                del campaing_data 
+        
+        params['time_increment'] = task_data.increment
+        insights_list =  AdAccount('act_'+account_id).get_insights(
+            params = params,
+            fields = campaing_insights_fields_names
+        )
+        if(len(insights_list)>0):
+            for insight in insights_list:
+                insights_data = {
+                    'level_insight':'campaign',
+                    'time_increment': task_data.increment
+                }
+                for campaing_insights_field in campaing_insights_fields_list:
+                    if (campaing_insights_field.name_field in insight):
+                        if(campaing_insights_field.serialize == 'Y'):
+                            insights_data[campaing_insights_field.name_field] = superSerialize(insight[campaing_insights_field.name_field])
                         else:
-                            campaing_data[field] = camp[field]
-            rows = rows + 1
-            #print(campaing_data)
-            #Save in data base
-            self.database.insert('campaing',campaing_data)
-            #Insight
-            campaing_object = Campaign(campaing_data['campaing_id'])
-            insights_list =  campaing_object.get_insights(
-                params = params,
-                fields = campaing_insights_fields_list
-            )
-            if(len(insights_list)>0):
-                for insight in insights_list:
-                    insights_data = {
-                        'level_insight':'campaign',
-                        'time_increment': task_data.increment
-                    }
-                    for campaing_insights_field in campaing_insights_fields_list:
-                        if (campaing_insights_field in insight):
-                            if(campaing_insights_field == 'promoted_object'):
-                                insights_data[campaing_insights_field] = superSerialize(insight[campaing_insights_field])
-                            else:
-                                insights_data[campaing_insights_field] = insight[campaing_insights_field]
-                    try:
-                        self.database.insert('insight',insights_data)
-                        del insights_data 
-                    except:
-                        print('falla')            
-                        del insights_data
+                            insights_data[campaing_insights_field.name_field] = insight[campaing_insights_field.name_field]
+                try:
+                    self.database.insert('insight',insights_data)
+                    del insights_data 
+                except:
+                    print('falla')            
+                    del insights_data
         
             #Check if you reached 75% of the limit, if yes then back-off for 5 minutes (put this chunk in your 'for ad is ads' loop, every 100-200 iterations)
             if (check_limit(account_id,my_access_token)>75):
@@ -142,6 +128,3 @@ class Campain(object):
                 logging.debug('75% Rate Limit Reached. Cooling Time 5 Minutes.')
                 time.sleep(300)
                 print('Cooling finish.'+ account_id)
-
-        # Print report
-        print (str(rows) + " rows added to the file ")
