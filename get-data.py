@@ -41,7 +41,6 @@ def run_task_thread(**bussines_task):
     hilo1.join()
     accounts = DB.select('account')
     for account in accounts:
-        run_class_thread(bussines_data,account.account_id)
         hilo_account = threading.Thread(target=run_class_thread,args=(bussines_data,account.account_id,))
         hilo_account.start()
         time.sleep(30)
